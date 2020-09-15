@@ -6,7 +6,39 @@
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script>
   <script type="text/babel">
+    let page;
+    let type;
+    let sendBtn;
+    let contentTag;
 
+    const setup = () => {
+      page = document.querySelector('#page');
+      type = document.querySelector('#type');
+      sendBtn = document.querySelector('#send');
+      sendBtn.addEventListener('click', fetchStuff);
+      contentTag = document.querySelector('#content');
+    };
+
+    const fetchStuff = async () => {
+      const url = page.value;
+      const typeVal = type.value;
+      console.log({ url, typeVal })
+      const options = { headers: { Accept: type.value } };
+      let response = await fetch(url, options);
+      let responseType = response.headers['Content-Type'];
+      if (responseType === "text/xml"){
+        contentTag.innerHTML = response.text();
+        console.log("heydsd");
+      } else {
+        let obj = await response.json();
+        console.log("hey")
+        console.log(obj);
+        contentTag.innerHTML = `<h1>${obj.id}</h1><p>${obj.message}</p>`
+      }
+    };
+
+    // eslint-disable-next-line no-undef
+    window.addEventListener('load', setup);
   </script>
 </head>
 <body>
