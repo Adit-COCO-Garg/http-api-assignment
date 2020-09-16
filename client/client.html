@@ -4,8 +4,59 @@
   <title>Our simple HTTP server</title>
   <link rel="stylesheet" type="text/css" href="/style.css">
   
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script>
-  <script type="text/babel">
+  <!-- <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script> -->
+  <script>
+    window.addEventListener('load', setup);
+
+    let page;
+    let type;
+    let sendBtn;
+    let contentTag;
+
+    const h1Strings = {
+      success: 'Success',
+      badRequest: 'Bad Request',
+      unauthorized: 'Unathorized',
+      forbidden: 'Forbidden',
+      internal: 'Internal Server Error',
+      notImplemented: 'Not Implemented',
+      notFound: 'Resource Not Found', 
+    };
+
+    function setup() {
+      page = document.querySelector('#page');
+      type = document.querySelector('#type');
+      sendBtn = document.querySelector('#send');
+      sendBtn.addEventListener('click', fetchStuff);
+      contentTag = document.querySelector('#content');
+    };
+          
+    async function fetchStuff() {
+      const url = page.value;
+      const typeVal = type.value;
+      const options = { headers: { Accept: typeVal } };
+      let response = await fetch(url, options);
+      let responseType = response.headers.get('Content-Type');
+      if (responseType === "text/xml"){
+        let obj = await response.text();
+        let xmlResponse = await new DOMParser().parseFromString(obj, "text/xml");
+        let message = xmlResponse.querySelector('message').textContent;
+        let id = xmlResponse.querySelector('id');
+        if (id) {
+          id = id.textContent;
+          contentTag.innerHTML = `<h1>${h1Strings[id]}</h1><p>${message}</p>`;
+        } else {
+          contentTag.innerHTML = `<p>${message}</p>`
+        }
+      } else {
+        let obj = await response.json();
+        if ('id' in obj) {
+          contentTag.innerHTML = `<h1>${h1Strings[obj.id]}</h1><p>${obj.message}</p>`;
+        } else {
+          contentTag.innerHTML = `<p>${obj.message}</p>`
+        }
+      }
+    };
 
   </script>
 </head>
